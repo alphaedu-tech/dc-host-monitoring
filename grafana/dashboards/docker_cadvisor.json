@@ -1,0 +1,138 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "CPU Usage per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+      "fieldConfig": {
+        "defaults": {"unit": "percent", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["mean","max"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[5m])) by (name) * 100",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Memory Usage per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+      "fieldConfig": {
+        "defaults": {"unit": "bytes", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["mean","max"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "container_memory_usage_bytes{name=~\".+\"}",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Memory Usage (Top 15)",
+      "type": "bargauge",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 16},
+      "fieldConfig": {
+        "defaults": {"unit": "bytes", "thresholds": {"mode": "absolute", "steps": [{"color": "green","value": null},{"color": "yellow","value": 268435456},{"color": "red","value": 536870912}]}},
+        "overrides": []
+      },
+      "options": {"orientation": "horizontal", "displayMode": "gradient", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "targets": [{
+        "expr": "topk(15, container_memory_usage_bytes{name=~\".+\"})",
+        "legendFormat": "{{name}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "title": "CPU Usage (Top 15)",
+      "type": "bargauge",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 16},
+      "fieldConfig": {
+        "defaults": {"unit": "percent", "thresholds": {"mode": "absolute", "steps": [{"color": "green","value": null},{"color": "yellow","value": 50},{"color": "red","value": 80}]}},
+        "overrides": []
+      },
+      "options": {"orientation": "horizontal", "displayMode": "gradient", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "targets": [{
+        "expr": "topk(15, sum(rate(container_cpu_usage_seconds_total{name=~\".+\"}[5m])) by (name) * 100)",
+        "legendFormat": "{{name}}",
+        "refId": "A",
+        "instant": true
+      }]
+    },
+    {
+      "title": "Network Received per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+      "fieldConfig": {
+        "defaults": {"unit": "Bps", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "sum(rate(container_network_receive_bytes_total{name=~\".+\"}[5m])) by (name)",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Network Sent per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+      "fieldConfig": {
+        "defaults": {"unit": "Bps", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "sum(rate(container_network_transmit_bytes_total{name=~\".+\"}[5m])) by (name)",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Disk Read per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 34},
+      "fieldConfig": {
+        "defaults": {"unit": "Bps", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "sum(rate(container_fs_reads_bytes_total{name=~\".+\"}[5m])) by (name)",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Disk Write per Container",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 34},
+      "fieldConfig": {
+        "defaults": {"unit": "Bps", "custom": {"fillOpacity": 10, "lineWidth": 1, "showPoints": "never"}},
+        "overrides": []
+      },
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{
+        "expr": "sum(rate(container_fs_writes_bytes_total{name=~\".+\"}[5m])) by (name)",
+        "legendFormat": "{{name}}",
+        "refId": "A"
+      }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["docker"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "Docker Containers",
+  "uid": "docker-containers-custom"
+}

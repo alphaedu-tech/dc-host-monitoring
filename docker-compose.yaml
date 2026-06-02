@@ -48,6 +48,9 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
+    command:
+      - "--docker_only=true"
+      - "--store_container_labels=true"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro

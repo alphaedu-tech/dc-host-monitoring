@@ -33,7 +33,7 @@ scrape_configs:
 
       # Drop monitoring containers (those with 'hm-' prefix)
       - source_labels: ["__meta_docker_container_name"]
-        regex: "hm-.*"
+        regex: "/dc-host-monitoring-.*"
         action: drop
 
   - job_name: imported_logs
