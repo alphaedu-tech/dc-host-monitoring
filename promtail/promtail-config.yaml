@@ -23,6 +23,15 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
     relabel_configs:
+      # Постоянная метка потока. Без неё у docker-джоба меток нет вовсе: в отличие
+      # от static_configs выше, `job_name` сам меткой не становится, а `container`
+      # и `stream` ниже берутся из мета-полей и бывают пустыми. Поток без единой
+      # метки Loki отклоняет — «at least one label pair is required per stream», —
+      # promtail ретраит его без остановки и пишет об этом в свой лог: 11 ГБ на
+      # alphaedu-test 21.08 и по 5 миллионов таких строк на обоих продах.
+      - target_label: "job"
+        replacement: "docker"
+
       # Extract container name
       - source_labels: ["__meta_docker_container_name"]
         target_label: "container"
