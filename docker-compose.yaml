@@ -1,5 +1,17 @@
+# Логи контейнеров ротируются: 100 МБ x 10 файлов, потолок 1 ГБ на сервис.
+# 2026-08-21 promtail не смог отдать логи в loki («at least one label pair is
+# required per stream»), ретраил без остановки и записал об этом 11 ГБ в
+# собственный json.log; loki добавил 5.5 ГБ своих 400-х. Диск тестового хоста
+# ушёл под 100%, и на нём встал деплой LMS: pre-deploy бэкап не смог записать
+# копию в MinIO. Ротации не было ни здесь, ни в /etc/docker/daemon.json —
+# то есть любой шумный контейнер мог повторить это, не только promtail.
 services:
   prometheus:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     build:
       context: .
       dockerfile_inline: |
@@ -22,6 +34,11 @@ services:
     user: nobody:nobody
 
   grafana:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: grafana/grafana:latest
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
@@ -39,6 +56,11 @@ services:
     user: "472"
 
   node:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: prom/node-exporter:latest
     command:
       - "--path.rootfs=/host"
@@ -47,6 +69,11 @@ services:
     restart: unless-stopped
 
   cadvisor:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: gcr.io/cadvisor/cadvisor:latest
     command:
       - "--docker_only=true"
@@ -67,6 +94,11 @@ services:
       retries: 3
 
   loki:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: grafana/loki:2.9.13
     user: root
     ports:
@@ -80,6 +112,11 @@ services:
     restart: unless-stopped
 
   promtail:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: grafana/promtail:2.8.2
     volumes:
       - /var/log:/var/log:ro
@@ -92,6 +129,11 @@ services:
     restart: unless-stopped
 
   alertmanager:
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "10"
     image: prom/alertmanager
     volumes:
       - ./alertmanager:/etc/alertmanager
