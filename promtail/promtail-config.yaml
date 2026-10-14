@@ -30,6 +30,18 @@ scrape_configs:
           job: varlogs
           __path__: /var/log/*.log
 
+  # nginx хоста пишет в подпапку /var/log/nginx/, и `system` выше её не видит.
+  # 14.10.2026 на проде AITU limit_req резал загрузку фронта три часа, а в Loki
+  # не было ни строчки: Django эти запросы не получал, nginx писал только сюда.
+  # access и error различаются меткой `filename`, которую promtail ставит сам.
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          __path__: /var/log/nginx/*.log
+
   - job_name: docker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock

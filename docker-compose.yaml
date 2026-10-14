@@ -105,6 +105,7 @@ services:
       - "127.0.0.1:3100:3100"
     volumes:
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - ./loki/rules:/etc/loki/rules:ro
       - ./.docker_volumes/loki/data:/loki
       - ./.docker_volumes/loki/wal:/wal
       - ./.docker_volumes/loki/compactor:/loki/compactor
