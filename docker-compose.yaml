@@ -123,6 +123,8 @@ services:
       - /var/log:/var/log:ro
       - ./imported_logs:/imported_logs:ro
       - ./promtail/promtail-config.yaml:/etc/promtail/config.yaml
+      # позиции чтения переживают пересоздание контейнера; папку создаёт docker
+      - ./.docker_volumes/promtail:/var/lib/promtail
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command: -config.file=/etc/promtail/config.yaml
     depends_on:
