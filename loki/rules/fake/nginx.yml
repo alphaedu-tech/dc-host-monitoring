@@ -1,0 +1,28 @@
+# loki/rules/fake/nginx.yml
+# Алерты по логам nginx хоста (job="nginx" в promtail).
+groups:
+  - name: nginx
+    rules:
+      # limit_req отказал клиенту. Django такие запросы не видит — только этот лог.
+      # 14.10.2026 на проде AITU так три часа резалась загрузка фронта.
+      - alert: NginxRateLimited
+        expr: sum by (filename) (count_over_time({job="nginx"} |= "limiting requests" [5m])) > 20
+        labels:
+          severity: warning
+        annotations:
+          summary: "nginx limit_req отказывает: {{ $value }} записей за 5 минут ({{ $labels.filename }})"
+          description: 'Grafana Explore: {job="nginx"} |= "limiting requests" — какая зона, какой клиент, какие пути.'
+
+      # Всплеск 5xx в access-логе: 502/504 — упал или тормозит апстрим, 503 — в т.ч. limit_req.
+      - alert: NginxHigh5xx
+        expr: |
+          sum by (filename) (
+            count_over_time({job="nginx", filename=~".*access.*\\.log"}
+              | pattern `<_> - <_> [<_>] "<_>" <status> <_>`
+              | status >= 500 [5m])
+          ) > 20
+        labels:
+          severity: warning
+        annotations:
+          summary: "nginx: {{ $value }} ответов 5xx за 5 минут ({{ $labels.filename }})"
+          description: 'Grafana Explore: {job="nginx", filename=~".*access.*"} | pattern `<_> - <_> [<_>] "<_>" <status> <_>` | status >= 500'

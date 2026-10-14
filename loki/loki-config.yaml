@@ -45,6 +45,23 @@ table_manager:
   retention_deletes_enabled: false
   retention_period: 0s
 
+# Алерты по логам: правила LogQL из loki/rules/ → alertmanager стека.
+# auth_enabled: false — Loki работает от тенанта «fake», поэтому правила
+# лежат в loki/rules/fake/.
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /etc/loki/rules
+  rule_path: /loki/rules-temp
+  alertmanager_url: http://alertmanager:9093
+  # prom/alertmanager:latest — API v1 убран в 0.27; Loki 2.9 по умолчанию шлёт в v1.
+  enable_alertmanager_v2: true
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+
 # Explicitly disable compactor to prevent errors
 compactor:
   working_directory: /loki/compactor
