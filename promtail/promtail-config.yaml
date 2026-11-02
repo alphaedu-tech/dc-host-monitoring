@@ -4,7 +4,10 @@ server:
   grpc_listen_port: 0
 
 positions:
-  filename: /tmp/positions.yaml
+  # На томе, а не в /tmp контейнера: иначе после каждого пересоздания promtail
+  # перечитывает все логи с начала — дубли, ложные алерты по nginx и поток
+  # 400 «timestamp too old» от Loki на записи старше 7 дней (14.10.2026).
+  filename: /var/lib/promtail/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
@@ -41,6 +44,27 @@ scrape_configs:
         labels:
           job: nginx
           __path__: /var/log/nginx/*.log
+    # Время записи — из самой строки, а не момент чтения: без этого строки,
+    # прочитанные с опозданием, ложатся в Loki «сейчас» и поднимают алерты
+    # по давно прошедшим событиям. Хосты в UTC; error.log пишет время без зоны.
+    pipeline_stages:
+      - match:
+          selector: '{filename=~".*error.*"}'
+          stages:
+            - regex:
+                expression: '^(?P<time>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) '
+            - timestamp:
+                source: time
+                format: "2006/01/02 15:04:05"
+                location: UTC
+      - match:
+          selector: '{filename=~".*access.*"}'
+          stages:
+            - regex:
+                expression: '\[(?P<time>\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} [+-]\d{4})\]'
+            - timestamp:
+                source: time
+                format: "02/Jan/2006:15:04:05 -0700"
 
   - job_name: docker
     docker_sd_configs:
